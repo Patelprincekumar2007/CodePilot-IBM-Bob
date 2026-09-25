@@ -20,7 +20,7 @@ def list_tasks(
     assignee_id: Optional[str] = Query(default=None),
     svc: TaskService = Depends(get_task_service),
 ):
-    return svc.list_tasks(project_id=project_id, status=assignee_id, assignee_id=status)
+    return svc.list_tasks(project_id=project_id, status=status, assignee_id=assignee_id)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)

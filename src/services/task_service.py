@@ -85,7 +85,7 @@ class TaskService:
             description=task.description,
             project_id=task.project_id,
             assignee_id=task.assignee_id,
-            status=task.status,
+            status=update.status,
             created_at=task.created_at,
             updated_at=datetime.utcnow(),
         )
