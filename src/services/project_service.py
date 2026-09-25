@@ -71,8 +71,7 @@ class ProjectService:
                 progress_percent=0.0,
             )
 
-        # BUG 1: counts tasks that are NOT DONE instead of tasks that ARE DONE
-        completed = sum(1 for t in tasks if t.status != TaskStatus.DONE)
+        completed = sum(1 for t in tasks if t.status == TaskStatus.DONE)
         progress = round((completed / total) * 100, 2)
 
         return ProjectProgress(
