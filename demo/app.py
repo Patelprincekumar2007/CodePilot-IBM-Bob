@@ -5,6 +5,7 @@ Demo application for the IBM Bob 2.0 Hackathon.
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import re
@@ -82,6 +83,24 @@ SCENARIOS: dict[str, dict] = {
         "affected_tests": ["tests/test_tasks.py"],
     },
 }
+
+# ── Bug-report dataset (data/bug_reports.json) ───────────────────────────────
+# Synthetic team-created records. Each entry maps to one SCENARIO by bug_id.
+# The dataset is loaded once at startup; the application reads it for display.
+# BUG_REPORTS: dict keyed by scenario id → dataset record (or empty dict if
+# the file is absent, so the app degrades gracefully without the dataset).
+
+_BUG_REPORTS_PATH = REPO_ROOT / "data" / "bug_reports.json"
+_BUG_ID_TO_SCENARIO = {"BUG-001": "progress_calculation", "BUG-002": "status_update", "BUG-003": "filter_args_swapped"}
+
+def _load_bug_reports() -> dict[str, dict]:
+    try:
+        records = json.loads(_BUG_REPORTS_PATH.read_text(encoding="utf-8"))
+        return {_BUG_ID_TO_SCENARIO[r["bug_id"]]: r for r in records if r.get("bug_id") in _BUG_ID_TO_SCENARIO}
+    except Exception:
+        return {}
+
+BUG_REPORTS: dict[str, dict] = _load_bug_reports()
 
 # ── Page config ───────────────────────────────────────────────────────────────
 
@@ -1030,6 +1049,38 @@ div[data-testid="stStatusWidget"] { display: none !important; }
     color: #8b949e;
     line-height: 1.65;
 }
+.cp-issue-card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.cp-issue-card-behav {
+    margin-top: 10px;
+    border-top: 1px solid #21262d;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.cp-issue-card-behav-row {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.cp-issue-card-behav-lbl {
+    flex: 0 0 58px;
+    font-weight: 600;
+    color: #57606a;
+    text-transform: uppercase;
+    font-size: 10px;
+    padding-top: 2px;
+}
+.cp-issue-card-behav-val {
+    color: #8b949e;
+    flex: 1;
+}
 
 /* Expected vs Actual */
 .cp-exp-act {
@@ -1796,10 +1847,40 @@ elif st.session_state.page == "investigate":
         '</div>',
         unsafe_allow_html=True,
     )
+    _br = BUG_REPORTS.get(selected, {})
+    _br_id  = _br.get("bug_id", "")
+    _br_sev = _br.get("severity", "")
+    _br_exp = _br.get("expected_behavior", "")
+    _br_act = _br.get("actual_behavior", "")
+    _br_meta = ""
+    if _br_id:
+        _br_meta = (
+            f'  <div class="cp-issue-card-meta">'
+            f'    <span class="cp-badge cp-badge-fixed">{_br_id}</span>'
+            f'    <span class="cp-badge cp-badge-fixed">severity: {_br_sev}</span>'
+            f'    <span class="cp-badge cp-badge-fixed">status: {_br.get("status","")}</span>'
+            f'  </div>'
+        )
+    _br_behav = ""
+    if _br_exp or _br_act:
+        _br_behav = (
+            f'  <div class="cp-issue-card-behav">'
+            f'    <div class="cp-issue-card-behav-row">'
+            f'      <span class="cp-issue-card-behav-lbl">Expected</span>'
+            f'      <span class="cp-issue-card-behav-val">{_br_exp}</span>'
+            f'    </div>'
+            f'    <div class="cp-issue-card-behav-row">'
+            f'      <span class="cp-issue-card-behav-lbl">Actual</span>'
+            f'      <span class="cp-issue-card-behav-val">{_br_act}</span>'
+            f'    </div>'
+            f'  </div>'
+        )
     st.markdown(
         f'<div class="cp-issue-card">'
         f'  <div class="cp-issue-card-title">{sc["title"]}</div>'
+        f'{_br_meta}'
         f'  <div class="cp-issue-card-desc">{sc["description"]}</div>'
+        f'{_br_behav}'
         f'</div>',
         unsafe_allow_html=True,
     )

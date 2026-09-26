@@ -1,0 +1,38 @@
+[
+  {
+    "bug_id": "BUG-001",
+    "title": "Incorrect project progress calculation",
+    "description": "Project progress percentage is wrong when a project contains both completed and incomplete tasks. Tasks that are NOT done are counted as completed, producing an inverted percentage.",
+    "expected_behavior": "GET /projects/{id}/progress should return the ratio of DONE tasks to total tasks. For 2 completed and 3 incomplete tasks the result must be 40%.",
+    "actual_behavior": "The endpoint returns 60% instead of 40% because tasks that are not DONE are counted as completed, inverting the result.",
+    "affected_area": "Service layer",
+    "affected_file": "src/services/project_service.py",
+    "affected_function": "get_progress",
+    "severity": "high",
+    "status": "fixed"
+  },
+  {
+    "bug_id": "BUG-002",
+    "title": "Task status update not persisting",
+    "description": "PATCH /tasks/{id}/status accepts the request and returns 200, but the task always retains its original status — the new value is never applied.",
+    "expected_behavior": "After a successful PATCH /tasks/{id}/status request the task's status field must reflect the value sent in the request body.",
+    "actual_behavior": "The response reports 200 OK but the task status is unchanged. Any subsequent GET /tasks/{id} still shows the original status.",
+    "affected_area": "Service layer",
+    "affected_file": "src/services/task_service.py",
+    "affected_function": "update_status",
+    "severity": "high",
+    "status": "fixed"
+  },
+  {
+    "bug_id": "BUG-003",
+    "title": "Task filter arguments swapped",
+    "description": "GET /tasks?status=DONE filters by assignee_id instead, and GET /tasks?assignee_id=<id> applies a status filter. The two query parameters behave as each other.",
+    "expected_behavior": "GET /tasks?status=DONE should return only tasks whose status is DONE. GET /tasks?assignee_id=<id> should return only tasks assigned to that user.",
+    "actual_behavior": "The status and assignee_id query parameters are forwarded to the wrong service arguments, so each filter applies the opposite criterion.",
+    "affected_area": "API layer",
+    "affected_file": "src/api/tasks.py",
+    "affected_function": "list_tasks",
+    "severity": "medium",
+    "status": "fixed"
+  }
+]

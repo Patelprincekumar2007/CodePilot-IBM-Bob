@@ -279,6 +279,9 @@ CodePilot-IBM-Bob/
 │   ├── 03_status_investigation.png
 │   ├── 03_assignee_investigation.png
 │   └── 04_regression_tests.png
+├── data/
+│   ├── bug_reports.json
+│   └── README.md
 ├── requirements.txt
 ├── .gitignore
 └── README.md
@@ -478,6 +481,31 @@ Final verification:
 │      Verification    │
 └──────────────────────┘
 ```
+
+---
+
+# Dataset
+
+CodePilot includes a small **synthetic, team-created** bug-report dataset at `data/bug_reports.json`.
+
+It contains three records — one per debugging scenario — with the following fields:
+
+| Field | Description |
+|---|---|
+| `bug_id` | Stable identifier (`BUG-001` to `BUG-003`) |
+| `title` | Short issue title |
+| `description` | Full symptom description |
+| `expected_behavior` | What the API should do |
+| `actual_behavior` | What the API actually does (the wrong behavior) |
+| `affected_area` | Architectural layer |
+| `affected_file` | Repository-relative path |
+| `affected_function` | Defective function name |
+| `severity` | Developer-assigned triage severity |
+| `status` | `fixed` for all three records |
+
+The dataset is loaded by `demo/app.py` at startup and its `expected_behavior`, `actual_behavior`, `bug_id`, `severity`, and `status` fields are displayed in the Issue card on the Investigate page, anchoring the structured bug-report input to the full investigation chain.
+
+The dataset contains no real people's names, email addresses, personal information, confidential information, or externally scraped data. See `data/README.md` for full documentation.
 
 ---
 
